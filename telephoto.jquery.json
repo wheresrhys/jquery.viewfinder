@@ -1,0 +1,29 @@
+{
+  "name": "telephoto",
+  "title": "Telephoto",
+  "description": "A plugin for creating visual effects similar to zooming in/out using an optical zoom lens",
+  "version": "0.1",
+  "homepage": "https://github.com/wheresrhys/jquery.telephoto",
+  "author": {
+    "name": "Rhys Evans",
+    "email": "wheresrhys@gmail.com",
+    "url": "http://wheresrhys.co.uk"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wheresrhys/jquery.telephoto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wheresrhys/jquery.telephoto/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/wheresrhys/jquery.telephoto/blob/master/LICENSE-MIT"
+    }
+  ],
+  "dependencies": {
+    "jquery": "1.5"
+  },
+  "keywords": ["telephotored", "ajax", "telephoto", "promise", "when", "utility"]
+}
