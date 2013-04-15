@@ -45,36 +45,46 @@
     
   <script>
     $(function () {
-        var vf = $('.viewfinder').viewfinder();
-        
+        var vf = $('.viewfinder').viewfinder({
+            verticalBase: 'centre'
+        });
 
-        
-
-        setTimeout(function () {
-            vf.viewfinder({
+        var movements = [
+            {
                 viewpoint: {
                     x: 0,
                     y: 0,
                     z: 150
                 }
-            });
-        }, 1000);
-
-        setTimeout(function () {
-            vf.viewfinder({
+            },
+            {
                 viewpoint: {
                     x: 0,
                     y: 0,
                     z: -500
                 }
-            });
-        }, 5000);
+            },
+            {
+                zoom: 2
+            }
+        ];
 
-        setTimeout(function () {
-            vf.viewfinder({
-                zoom: 8
-            });
-        }, 8000);
+
+    function runMovements () {
+        var movement = movements.shift();
+        if (movement) {
+            vf.viewfinder(movement);
+            setTimeout (function () {
+                runMovements();
+            }, 3000)
+        }
+    }
+
+    setTimeout (function () {
+        runMovements();
+    }, 1000)
+     
+        
     });
   </script>
 

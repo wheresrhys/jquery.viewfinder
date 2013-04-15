@@ -35,23 +35,30 @@
                 height = $el.height(),
                 width = $el.width();
 
-            
+            this.original = {
+                left: $el[0].offsetLeft,
+                bottom: this.options.viewport.height - ($el[0].offsetTop + height),
+                top: 'auto',
+                right: 'auto'
+            };
 
-            this.height = this.originalHeight = height / this.options.zoom;
-            this.width = this.originalWidth = width / this.options.zoom;
+            this.height = this.original.height = height / this.options.zoom;
+            this.width = this.original.width = width / this.options.zoom;
 
-            $el.css({
-                height: this.height,
-                width: this.width                    
-            });
+
+            $el.css(this.original);
 
             this.currentState = $.extend({}, this.options);
 
             if (this.options.distance > -1) {
                 this.scaler = this.options.zoom / this.options.distance;
-                this.physicalHeight = height / this.scaler;
-                this.physicalWidth = width / this.scaler;
-                
+                this.physical = {
+                    height: height / this.scaler,
+                    width: width / this.scaler, 
+                    leftEdge: this.original.left / this.scaler,
+                    topEdge: this.original.top / this.scaler,
+                    distance: this.options.distance
+                };    
             } else {
                 this.infiniteDistance = true;
                 this.scaler = this.options.zoom;
@@ -69,7 +76,7 @@
         setCentre: function () {
             var vertical;
             if (this.options.verticalBase === 'centre') {
-                vertical = (this.options.viewport.height - this.height) / 2;
+                vertical = this.original.bottom  * this.scaler * (this.original.bottom > this.options.viewport.height / 2 ? 1 : -1);
             } else if (this.options.verticalBase === 'bottom') {
                 vertical = this.options.viewpoint.y * this.scaler;
             } 
@@ -99,11 +106,11 @@
             this.currentState.zoom = zoom;
             this.setScaler();
             if (this.infiniteDistance) {
-                this.height = this.originalHeight * this.scaler;
-                this.width = this.originalWidth * this.scaler;
+                this.height = this.original.height * this.scaler;
+                this.width = this.original.width * this.scaler;
             } else {
-                this.height = this.physicalHeight * this.scaler;
-                this.width = this.physicalWidth * this.scaler;
+                this.height = this.physical.height * this.scaler;
+                this.width = this.physical.width * this.scaler;
             }
             this.$el.css({
                 height: this.height,
@@ -114,17 +121,17 @@
 
         viewFromDistance: function (distanceForward) {
             if (!this.infiniteDistance) {
-                this.currentState.distance = this.options.distance - distanceForward;
+                this.currentState.distance = this.physical.distance - distanceForward;
                 this.setScaler();
-                if (distanceForward >= this.options.distance) {
-                    this.height = this.physicalHeight;
-                    this.width = this.physicalWidth;
+                if (distanceForward >= this.physical.distance) {
+                    this.height = this.physical.height;
+                    this.width = this.physical.width;
                     this.$el.css({
                         opacity: 0
                     });
                 } else {
-                    this.height = this.physicalHeight * this.scaler;
-                    this.width = this.physicalWidth * this.scaler;
+                    this.height = this.physical.height * this.scaler;
+                    this.width = this.physical.width * this.scaler;
                 }
                 this.$el.css({
                     height: this.height,
