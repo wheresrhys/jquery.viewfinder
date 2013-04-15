@@ -54,34 +54,45 @@
                 viewpoint: {
                     x: 0,
                     y: 0,
-                    z: 150
+                    z: -150
                 }
+            },
+            {
+                zoom: 2
             },
             {
                 viewpoint: {
                     x: 0,
                     y: 0,
-                    z: -500
+                    z: 30
                 }
             },
+            
             {
-                zoom: 2
-            }
+                viewpoint: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                zoom: 1
+            },
         ];
 
 
-    function runMovements () {
+    function runMovements (loop) {
         var movement = movements.shift();
         if (movement) {
             vf.viewfinder(movement);
+            loop && movements.push(movement);
             setTimeout (function () {
-                runMovements();
-            }, 3000)
+                runMovements(loop);
+            }, 2500)
         }
     }
 
     setTimeout (function () {
-        runMovements();
+        vf.addClass('animated')
+        runMovements(true);
     }, 1000)
      
         

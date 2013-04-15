@@ -55,8 +55,8 @@
                 this.physical = {
                     height: height / this.scaler,
                     width: width / this.scaler, 
-                    leftEdge: this.original.left / this.scaler,
-                    topEdge: this.original.top / this.scaler,
+                    left: this.original.left / this.scaler,
+                    bottom: this.original.bottom / this.scaler,
                     distance: this.options.distance
                 };    
             } else {
@@ -76,7 +76,13 @@
         setCentre: function () {
             var vertical;
             if (this.options.verticalBase === 'centre') {
-                vertical = this.original.bottom  * this.scaler * (this.original.bottom > this.options.viewport.height / 2 ? 1 : -1);
+
+                vertical = (this.physical || this.original).bottom * this.scaler - ((this.currentState.zoom - 1) * this.options.viewport.height) / 2;
+
+                // if (!this.infiniteDistance) {
+                //     vertical = vertical - 5 * this.options.viewport.height;
+                // }
+                //(this.original.bottom > this.options.viewport.height / 2 ? 1 : -1);
             } else if (this.options.verticalBase === 'bottom') {
                 vertical = this.options.viewpoint.y * this.scaler;
             } 
@@ -163,7 +169,7 @@
         init: function () {
             this.$layers = this.$el.find('.viewfinder-layer');
             this.prepareLayers();
-            this.currentViewpoint = this.options.viewpoint;
+            this.setCurrentViewpoint();
             this.render();
         },
 
@@ -185,6 +191,10 @@
             });
         },
 
+        setCurrentViewpoint: function () {
+            this.currentViewpoint = $.extend({}, this.options.viewpoint);
+        },
+
         zoom: function () {
             var newZoom = this.options.zoom;
             if (newZoom !== this.currentZoom) {
@@ -201,18 +211,20 @@
         },
 
         move: function () {
-            var newViewpoint = this.options.viewpoint;
+            var newViewpoint = this.options.viewpoint,
+                changed = false;
             if (newViewpoint.z !== this.currentViewpoint.z) {
+                changed = true;
                 _.each(this.layers, function (i, layer) {
                     layer.viewFromDistance(newViewpoint.z);
                 });
             }
 
-            this.currentViewpoint = newViewpoint;
+            changed && this.setCurrentViewpoint();
         },
 
         reRender: function (newOptions) {
-            this.options = newOptions;
+            $.extend(true, this.options, newOptions);
             this.render();
 
         },
@@ -235,7 +247,7 @@
      */
     $.fn.viewfinder = function(options) {
 
-        options = $.extend(true, {}, $.fn.viewfinder.defaults, options);
+        var completeOptions = $.extend(true, {}, $.fn.viewfinder.defaults, options);
 
         return $(this).each(function () {
 
@@ -243,15 +255,15 @@
                 instanceOptions = $el.data('viewfinder-options'),
                 previousInstance = $el.data('viewfinder');
 
-            instanceOptions = instanceOptions ? $.extend(true, options, instanceOptions) : options;
-
-            if (!previousInstance || instanceOptions.overwrite) {
+            if (!previousInstance || options.overwrite) {
                 
+                instanceOptions = instanceOptions ? $.extend(true, completeOptions, instanceOptions) : completeOptions;
+
                 previousInstance && previousInstance.destroy();
                 
                 $el.data('viewfinder', new Plugin($el, instanceOptions));
             } else {
-                previousInstance.reRender(instanceOptions);
+                previousInstance.reRender(options);
             }
         });
 
