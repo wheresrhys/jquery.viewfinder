@@ -6,8 +6,134 @@
  * Licensed under the MIT license.
  */
 
-(function($) {
+(function($, win, doc) {
 
+    var _ = win._ || {
+        each: function (arr, func) {
+            for (var i = 0, il = arr.length; i<il; i++) {
+                func(i, arr[i]);
+            }
+        }
+    };
+
+    
+    var Layer = function ($el, options) {
+        this.$el = $el;
+        this.options = this.options = $.extend(true, {}, options, $el.data('viewfinder-layer')),
+        this.init();
+    };
+
+    Layer.prototype = {
+        init: function () {
+            this.setDimensions();
+            this.setCentre();
+            this.setAngle();
+        },
+
+        setDimensions: function () {
+            var $el = this.$el,
+                height = $el.height(),
+                width = $el.width();
+
+            
+
+            this.height = this.originalHeight = height / this.options.zoom;
+            this.width = this.originalWidth = width / this.options.zoom;
+
+            $el.css({
+                height: this.height,
+                width: this.width                    
+            });
+
+            this.currentState = $.extend({}, this.options);
+
+            if (this.options.distance > -1) {
+                this.scaler = this.options.zoom / this.options.distance;
+                this.physicalHeight = height / this.scaler;
+                this.physicalWidth = width / this.scaler;
+                
+            } else {
+                this.infiniteDistance = true;
+                this.scaler = this.options.zoom;
+            }
+        },
+
+        setScaler: function () {
+            if (this.infiniteDistance) {
+                this.scaler = this.currentState.zoom;
+            } else {
+                this.scaler = this.currentState.zoom / this.currentState.distance;
+            }
+        },
+
+        setCentre: function () {
+            var vertical;
+            if (this.options.verticalBase === 'centre') {
+                vertical = (this.options.viewport.height - this.height) / 2;
+            } else if (this.options.verticalBase === 'bottom') {
+                vertical = this.options.viewpoint.y * this.scaler;
+            } 
+
+            this.transform((this.options.viewport.width - this.width) / 2, vertical);
+        },
+
+        setAngle: function () {
+
+        },
+
+        transform: function (left, bottom) {
+            this.$el.css({
+                left: left,
+                bottom: bottom
+            });
+            // this.$el.css({
+            //     "-webkit-transform": "translate3D(" + left + ", " + top + ")",
+            //     "-moz-transform": "translate3D(" + left + ", " + top + ")",
+            //     "-ms-transform": "translate3D(" + left + ", " + top + ")",
+            //     "-o-transform": "translate3D(" + left + ", " + top + ")",
+            //     "transform": "translate3D(" + left + ", " + top + ")"
+            // });
+        },
+
+        zoomTo: function (zoom) {
+            this.currentState.zoom = zoom;
+            this.setScaler();
+            if (this.infiniteDistance) {
+                this.height = this.originalHeight * this.scaler;
+                this.width = this.originalWidth * this.scaler;
+            } else {
+                this.height = this.physicalHeight * this.scaler;
+                this.width = this.physicalWidth * this.scaler;
+            }
+            this.$el.css({
+                height: this.height,
+                width: this.width
+            });
+            this.setCentre();
+        },
+
+        viewFromDistance: function (distanceForward) {
+            if (!this.infiniteDistance) {
+                this.currentState.distance = this.options.distance - distanceForward;
+                this.setScaler();
+                if (distanceForward >= this.options.distance) {
+                    this.height = this.physicalHeight;
+                    this.width = this.physicalWidth;
+                    this.$el.css({
+                        opacity: 0
+                    });
+                } else {
+                    this.height = this.physicalHeight * this.scaler;
+                    this.width = this.physicalWidth * this.scaler;
+                }
+                this.$el.css({
+                    height: this.height,
+                    width: this.width
+                });
+            }
+            this.setCentre();
+        }
+    };
 
     /*
         Plugin
@@ -17,6 +143,7 @@
     var Plugin = function ($el, options) {
 
         this.options = options;
+        this.$el = $el;
         this.init();
     };
 
@@ -24,7 +151,74 @@
         Plugin.init
         Applies the plugin according to the options passed to it
      */
-    Plugin.prototype.init = function () {
+    Plugin.prototype = {
+        
+        init: function () {
+            this.$layers = this.$el.find('.viewfinder-layer');
+            this.prepareLayers();
+            this.currentViewpoint = this.options.viewpoint;
+            this.render();
+        },
+
+
+        prepareLayers: function () {
+            var self = this;
+
+            this.layers = [];
+
+            this.options.viewport = {
+                height: this.$el.height(),
+                width: this.$el.width()
+            },
+
+            this.$layers.each(function () {
+                    
+                self.layers.push(new Layer($(this), self.options));
+                
+            });
+        },
+
+        zoom: function () {
+            var newZoom = this.options.zoom;
+            if (newZoom !== this.currentZoom) {
+                _.each(this.layers, function (i, layer) {
+                    layer.zoomTo(newZoom);
+                });
+            }
+
+            this.currentZoom = newZoom;
+        },
+
+        panAndTilt: function () {
+
+        },
+
+        move: function () {
+            var newViewpoint = this.options.viewpoint;
+            if (newViewpoint.z !== this.currentViewpoint.z) {
+                _.each(this.layers, function (i, layer) {
+                    layer.viewFromDistance(newViewpoint.z);
+                });
+            }
+
+            this.currentViewpoint = newViewpoint;
+        },
+
+        reRender: function (newOptions) {
+            this.options = newOptions;
+            this.render();
+
+        },
+
+        render: function () {
+            this.zoom();
+            this.move();
+            this.panAndTilt();
+        },
+
+        destroy: function () {
+
+        }
     };
 
 
@@ -46,17 +240,27 @@
 
             if (!previousInstance || instanceOptions.overwrite) {
                 
-                previousInstance && previousInsatance.destroy();
+                previousInstance && previousInstance.destroy();
                 
                 $el.data('viewfinder', new Plugin($el, instanceOptions));
+            } else {
+                previousInstance.reRender(instanceOptions);
             }
         });
 
     };
 
     $.fn.viewfinder.defaults = {
-
+        zoom: 1,
+        pan: 0,
+        tilt: 0,
+        viewpoint: {
+            x: 0,
+            y:1.5,
+            z:0
+        },
+        verticalBase: 'bottom' // or centre
     };
 
 
-}(jQuery));
+}(jQuery, window, document));

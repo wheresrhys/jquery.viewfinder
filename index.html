@@ -6,30 +6,75 @@
 	<meta name="description" content="">
 	
 	<title>jQuery.viewfinder demo</title>
-	
-	<script src='src/viewfinder.js'></script>
+	<script src="../jquery/jquery-1.9.0.js"></script>
+	<script src="src/viewfinder.js"></script>
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
 	<!-- Force latest IE rendering engine & Chrome Frame -->
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="style/viewfinder.css" />
+    <style>
+        #viewfinder {
+            height: 600px;
+            width: 800px;
+            margin: 0 auto;
+        }
 
+        .viewfinder-layer {
+            bottom: 0;
+        }
+        
+        .viewfinder-layer:first-child {
+            top: 0;
+        }
+
+    </style>
 </head>
 
 <body>
 			
   
-    <div class="viewfinder" >
+    <div class="viewfinder" id="viewfinder">
         
         <!-- parallax layers -->
-        <img class="viewfinder-layer" src="img/0_sun.png" >
-        <img class="viewfinder-layer" src="img/1_mountains.png" >
-        <img class="viewfinder-layer" src="img/2_hill.png" >
-        <img class="viewfinder-layer" src="img/3_wood.png" >
+        <img class="viewfinder-layer" src="img/0_sun.png" data-viewfinder-layer='{"distance": -1}' />
+        <img class="viewfinder-layer" src="img/1_mountains.png" data-viewfinder-layer='{"distance": 10000}' />
+        <img class="viewfinder-layer" src="img/2_hill.png" data-viewfinder-layer='{"distance": 1000}' />
+        <img class="viewfinder-layer" src="img/3_wood.png" data-viewfinder-layer='{"distance": 200}' />
     </div>
     
   <script>
     $(function () {
-        $('.viewfinder').viewfinder();
+        var vf = $('.viewfinder').viewfinder();
+        
+
+        
+
+        setTimeout(function () {
+            vf.viewfinder({
+                viewpoint: {
+                    x: 0,
+                    y: 0,
+                    z: 150
+                }
+            });
+        }, 1000);
+
+        setTimeout(function () {
+            vf.viewfinder({
+                viewpoint: {
+                    x: 0,
+                    y: 0,
+                    z: -500
+                }
+            });
+        }, 5000);
+
+        setTimeout(function () {
+            vf.viewfinder({
+                zoom: 8
+            });
+        }, 8000);
     });
   </script>
 

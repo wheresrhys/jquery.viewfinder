@@ -1,0 +1,15 @@
+.viewfinder {
+    position: relative;
+}
+
+.viewfinder-layer {
+    position: absolute;
+    opacity: 1;
+    left: center;
+    top: center;
+    -webkit-transition: all 2s;
+    -moz-transition: all 2s;
+    -ms-transition: all 2s;
+    -o-transition: all 2s;
+    transition: all 2s;
+}
