@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html class="js" lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<meta name="author" content="">
+	<meta name="description" content="">
+	
+	<title>jQuery.viewfinder demo</title>
+	
+	<script src='src/viewfinder.js'></script>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+	<!-- Force latest IE rendering engine & Chrome Frame -->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+</head>
+
+<body>
+			
+  
+    <div class="viewfinder" >
+        
+        <!-- parallax layers -->
+        <img class="viewfinder-layer" src="img/0_sun.png" >
+        <img class="viewfinder-layer" src="img/1_mountains.png" >
+        <img class="viewfinder-layer" src="img/2_hill.png" >
+        <img class="viewfinder-layer" src="img/3_wood.png" >
+    </div>
+    
+  <script>
+    $(function () {
+        $('.viewfinder').viewfinder();
+    });
+  </script>
+
+
+</body></html>
